@@ -126,13 +126,13 @@ public class Parser {
             if(con.type.kind == Struct.Int)
                 con.val = t.val;
             else
-                error("You can't assing a int in a char type variable");//TODO error msg
+                error("You can't assing a int in a char type variable");
         } else if(sym == charCon) {
             scan();
             if(con.type.kind == Struct.Char)
                 con.val = t.val;
             else
-                error("You can't assing a char in a int type variable");//TODO error msg
+                error("You can't assing a char in a int type variable");
         } else {
             error("invalid ConstDecl");
         }
@@ -291,7 +291,7 @@ public class Parser {
                 ActPars(x);
                 Code.put(Code.call);
                 Code.put2(x.adr);
-                if (x.type != Tab.noType)
+                if (x.type.kind != Tab.noType.kind)
                     Code.put(Code.pop);
             } else {
                 error("invalid assignment or call, = or '(' expected");
@@ -303,7 +303,7 @@ public class Parser {
             int op = Condition();
             check(rpar);
             Code.putFalseJump(op,0);
-            int adr = Code.pc-2;
+            int adr = Code.pc-2; //storing the adress to fixup later
             Statement();
             if(sym == else_) {
                 scan();
@@ -312,8 +312,9 @@ public class Parser {
                 Code.fixup(adr);
                 Statement();
                 Code.fixup(adr2);
+            } else {
+                Code.fixup(adr);
             }
-            Code.fixup(adr);
         } else if(sym == while_) {
             scan();
             int top = Code.pc;
@@ -344,7 +345,7 @@ public class Parser {
             Code.put(Code.exit);
             Code.put(Code.return_);
             check(semicolon);
-        } else if(sym == read_) { //TODO error check
+        } else if(sym == read_) {
             scan();
             check(lpar);
             Operand x = Designator();
@@ -374,6 +375,8 @@ public class Parser {
                 scan();
                 check(number);
                 Code.load(new Operand(t.val));
+            } else {
+                Code.put(Code.const0);
             }
             if(x.type.kind == Tab.charType.kind) {
                 Code.put(Code.bprint);
@@ -470,7 +473,7 @@ public class Parser {
         if(sym == minus) {
             scan();
             x = Term();
-            if (x.type != Tab.intType) {
+            if (x.type.kind != Tab.intType.kind) {
                 error("operand must be of type int");
             }
             if (x.kind == Operand.Con) {
@@ -486,7 +489,7 @@ public class Parser {
             Code.load(x);
             Operand y = Term();
             Code.load(y);
-            if (x.type != Tab.intType || y.type != Tab.intType)
+            if (x.type.kind != Tab.intType.kind || y.type.kind != Tab.intType.kind)
                 error("operands must be of type int");
             Code.put(op);
         }
@@ -500,7 +503,7 @@ public class Parser {
             Code.load(x);
             Operand y = Factor();
             Code.load(y);
-            if (x.type != Tab.intType || y.type != Tab.intType) {
+            if (x.type.kind != Tab.intType.kind || y.type.kind != Tab.intType.kind) {
                 error("operands must be of type int");
             }
             Code.put(op);
@@ -518,12 +521,12 @@ public class Parser {
             x = Designator();
             if(sym == lpar) {
                 ActPars(x);
-                if (x.type == Tab.noType) {
+                if (x.type.kind == Tab.noType.kind) {
                     error("procedure called as a function");
                 }
-                if (x.obj == Tab.ordObj || x.obj == Tab.chrObj) {
+                if (x.obj.kind == Tab.ordObj.kind || x.obj.kind == Tab.chrObj.kind) {
                     ;// nothing
-                } else if (x.obj == Tab.lenObj) {
+                } else if (x.obj.kind == Tab.lenObj.kind) {
                     Code.put(Code.arraylength);
                 } else {
                     Code.put(Code.call);
@@ -552,7 +555,7 @@ public class Parser {
                     error("array size must be of type int");
                 Code.load(x);
                 Code.put(Code.newarray);
-                if (type == Tab.charType)
+                if (type.kind == Tab.charType.kind)
                     Code.put(0);
                 else
                     Code.put(1);

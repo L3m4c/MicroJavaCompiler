@@ -81,25 +81,29 @@ public class Scanner {
 		nextCh();
 	}
 
-    //
+    //read the next string and store it a token
     private static void readName(Token t) {
-
+        //creating a string builder to avoid to create a new String each time.
+        //populate the sb with the next character
         StringBuilder sb = new StringBuilder();
         do {
             sb.append(ch);
             nextCh();
         } while(Character.isLetter(ch) || Character.isDigit(ch));
 
+        //search if the string is a keyword. if yes we get the index.
         int index = Arrays.binarySearch(key, sb.toString());
         if( index >= 0) {
             t.kind = keyVal[index];
         } else {
+            //if not it's an ident.
             t.kind = ident;
             t.string = sb.toString();
         }
 
     }
 
+    //read the next number and store it a token
     private static void readNumber(Token t) {
         t.kind = number;
         StringBuilder sb = new StringBuilder();
@@ -116,21 +120,29 @@ public class Scanner {
         }
     }
 
+    //Read the next charCon like 'x' or '\n'
     private static void readCharCon(Token t) {
         StringBuilder sb = new StringBuilder();
         nextCh();
-        while(ch != '\'' && ch != eof && ch != eol & ch != '\r'){
+        //Getting the entire string
+        while(ch != '\'' && ch != eof && ch != eol & ch != '\r') {
             sb.append(ch);
             nextCh();
         }
-
         t.string = sb.toString();
         t.kind = charCon;
-
+        //if value in simple quote are bigger than 2 or equal to 0 it's a incorrect value
         if(t.string.length() > 2 || t.string.length() == 0) {
             t.val = -1;
             System.err.println("error: value in quote incorrect line :" + (line) + ", col:" + col);
+
+        } else if(t.string.length() == 1) { //if = 1 it may be a simple letter or digit
+            char c = t.string.charAt(0);
+            if(Character.isDigit(c) || Character.isLetter(c)) {
+                t.val = c;
+            }
         } else if(t.string.length() == 2) {
+            //if the value is equal to 2, we have a special character.
                 if (t.string.charAt(0) == '\\') {
                     switch (t.string.charAt(1)) {
                         case 'n':
@@ -148,9 +160,6 @@ public class Scanner {
                         case 'r':
                             t.val = '\r';
                             break;
-                        case '\'': //TODO buggy
-                            t.val = '\'';
-                            break;
                         case '\"':
                             t.val = '\"';
                             break;
@@ -163,12 +172,6 @@ public class Scanner {
                             break;
                     }
                 }
-        } else if (ch!='\r'){
-            t.val = t.string.charAt(0);
-        } else {
-            System.err.println("error: value in quote incorrect line :" + line + ", col:" + col);
-
-            t.val = -1;
         }
         nextCh();
     }
@@ -344,6 +347,7 @@ public class Scanner {
             default:
                 nextCh();
                 t.kind = none;
+                System.err.println("error: Unknow token :" + line + ", col:" + col);
                 break;
         }
         return t;

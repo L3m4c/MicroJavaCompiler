@@ -1,5 +1,5 @@
 program P
-	final int size = 10;
+	final int size = 11;
 	class Table {
 		int[] pos;
 		int[] neg;

@@ -126,7 +126,7 @@ public class Code {
             case Operand.Fld: // assert: object base address is on the stack
                 put(getfield); put2(x.adr); break;
             case Operand.Elem: // assert: base address and index are on stack
-                if (x.type == Tab.charType) put(baload); else put(aload);
+                if (x.type.kind == Tab.charType.kind) put(baload); else put(aload);
                 break;
             case Operand.Stack: break; // nothing (already loaded)
             default: Parser.error("cannot load this value");
@@ -154,7 +154,7 @@ public class Code {
                 put2(x.adr);
                 break;
             case Operand.Elem:
-                if (x.type == Tab.charType) put(bastore); else put(astore);
+                if (x.type.kind == Tab.charType.kind) put(bastore); else put(astore);
                 break;
             case Operand.Stack:
                 Parser.error("error Stack assign method");
